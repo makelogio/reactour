@@ -7,7 +7,7 @@ export function safe(sum: number): number {
   return sum < 0 ? 0 : sum
 }
 
-function getInViewThreshold(threshold: InViewArgs['threshold']) {
+function getInViewThreshold(threshold: ThresholdType) {
   if (typeof threshold === 'object' && threshold !== null) {
     return {
       thresholdX: threshold.x || 0,
@@ -50,8 +50,10 @@ export function inView({
         right <= windowWidth - thresholdX
 }
 
+type ThresholdType = { x?: number; y?: number } | number | undefined
+
 type InViewArgs = RectResult & {
-  threshold?: { x?: number; y?: number } | number
+  threshold?: ThresholdType
 }
 
 export const isHoriz = (pos: string) => /(left|right)/.test(pos)
@@ -97,6 +99,24 @@ export type CoordType = number[]
 
 export type CoordsObjectType = {
   [position: string]: CoordType
+}
+
+export function elementReady(selector: string) {
+  return new Promise(resolve => {
+    let el = document.querySelector(selector)
+    if (el) {
+      resolve(el)
+    }
+    new MutationObserver((_, observer) => {
+      Array.from(document.querySelectorAll(selector)).forEach(element => {
+        resolve(element)
+        observer.disconnect()
+      })
+    }).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    })
+  })
 }
 
 export {

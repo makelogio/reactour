@@ -1,5 +1,11 @@
 import { useEffect, useCallback, useState } from 'react'
-import { inView, smoothScroll, getWindow, getRect } from '@reactour/utils'
+import {
+  inView,
+  smoothScroll,
+  getWindow,
+  getRect,
+  elementReady,
+} from '@reactour/utils'
 import { StepType } from './types'
 
 let initialState = {
@@ -28,10 +34,18 @@ export function useSizes(
   const [isHighlightingObserved, setIsHighlightingObserved] = useState(false)
   const [refresher, setRefresher] = useState(null as any)
   const [dimensions, setdDimensions] = useState(initialState)
-  const target =
-    step?.selector instanceof Element
-      ? step?.selector
-      : document.querySelector(step?.selector)
+  const [target, setTarget] = useState<Element | null>(null)
+
+  useEffect(() => {
+    const updateTarget = async () => {
+      const target =
+        step?.selector instanceof Element
+          ? step?.selector
+          : await elementReady(step?.selector)
+      setTarget(target)
+    }
+    updateTarget()
+  }, [step?.selector])
 
   const handleResize = useCallback(() => {
     // if (!target && !step?.highlightedSelectors) return
